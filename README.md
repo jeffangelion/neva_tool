@@ -1,4 +1,4 @@
-# neva tool
+# neva_tool
 Tool for extracting data from neva.pkg (Evangelion: Jo (PSP) resources file)
 ## BPK0 archive structure
 Header           | Body                                            | Footer
