@@ -66,43 +66,29 @@ int main(int argc, const char *argv[])
 			if (memcmp (tmp, bpk0_header, header_size) == 0)
 			{
 				printf("header at 0x0, magic bytes: ");
+				
 				// Loop for fancy hex printing
 				for (short j = 4; j < 20; j++)
 				{
-					if ((unsigned short) buffer[j] <= 15)
-					{
-						printf("0%x ", (unsigned char) buffer[j]);
-					}
-					else
-					{
-						printf("%x ", (unsigned char) buffer[j]);
-					}
+					printf("%02x ", buffer[j] & 0xff);
 				}
 				printf("\n");
-				//TODO: REFACTOR
+
 				for (int j = 19; j > 15; j--)
 				{
-					unsigned int tmp_int;
-					(int) buffer[j] < 0 ? tmp_int = buffer[j] + 256 : tmp_int = buffer[j];
-					footer_address += tmp_int * (unsigned int) pow (16, (j - 16) * 2);
-					printf("%d\n", footer_address);
+					// Multiplying charcode by power of 16 and add to footer_address
+					footer_address += (buffer[j] < 0 ? buffer[j] + 256 : buffer[j]) * pow (16, (j - 16) * 2);
 				}
 			}
 
 			if (memcmp (tmp, bdl0_header, header_size) == 0)
 			{
 				printf("chunk  at 0x%x, magic bytes: ", i);
+				
 				// Loop for fancy hex printing
 				for (short j = 4; j < 32; j++)
 				{
-					if ((unsigned short) buffer[j] <= 15)
-					{
-						printf("0%x ", (unsigned char) buffer[j]);
-					}
-					else
-					{
-						printf("%x ", (unsigned char) buffer[j]);
-					}
+					printf("%02x ", buffer[j] & 0xff);
 				}
 				printf("\n");
 			}
