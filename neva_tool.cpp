@@ -19,18 +19,15 @@
 #include <cstring>
 #include <cmath>
 
-/* neva.pkg checksums
- * MD5:    26263287db03caeb0d3fc1393534706f
- * SHA1:   59d02466f26f9c8711e74187860aac5ebab7bc6d
- * SHA256: 1ebb2c257abc09f8f61eabcc3f589f62609f21eccedd1f4ba0c3252f149e29d8
- */
+void printh (const char input[], const int amount, const int starting_position)
+{
+	for (int i = starting_position; i < amount + starting_position; i++)
+	{
+		printf ("%02x ", input[i] & 0xff);
+	}
+}
 
-/* Header: 0x0 - 0x7FF
- * Body: 0x800 - 0x121EF7FF
- * Footer: 0x121EF800 - 0x122451BB
- */
-
-int main(int argc, const char *argv[])
+int main (int argc, const char *argv[])
 {
 	if (argc < 2)
 	{
@@ -65,14 +62,9 @@ int main(int argc, const char *argv[])
 
 			if (memcmp (tmp, bpk0_header, header_size) == 0)
 			{
-				printf("header at 0x0, magic bytes: ");
-				
-				// Loop for fancy hex printing
-				for (short j = 4; j < 20; j++)
-				{
-					printf("%02x ", buffer[j] & 0xff);
-				}
-				printf("\n");
+				printf ("header at 0x0, magic bytes: ");
+				printh (buffer, 16, 4);
+				printf ("\n");
 
 				for (int j = 19; j > 15; j--)
 				{
@@ -83,19 +75,14 @@ int main(int argc, const char *argv[])
 
 			if (memcmp (tmp, bdl0_header, header_size) == 0)
 			{
-				printf("chunk  at 0x%x, magic bytes: ", i);
-				
-				// Loop for fancy hex printing
-				for (short j = 4; j < 32; j++)
-				{
-					printf("%02x ", buffer[j] & 0xff);
-				}
-				printf("\n");
+				printf ("chunk  at 0x%x, magic bytes: ", i);
+				printh (buffer, 28, 4);
+				printf ("\n");
 			}
 
 			else if (i == footer_address)
 			{
-				printf("footer at 0x%x\n", i);
+				printf ("footer at 0x%x\n", i);
 				break;
 			}
 		}
