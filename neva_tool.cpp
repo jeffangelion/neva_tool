@@ -23,7 +23,12 @@ void printh (const char input[], const int amount, const int starting_position)
 {
 	for (int i = starting_position; i < amount + starting_position; i++)
 	{
-		printf ("%02x ", input[i] & 0xff);
+		printf ("%02x", input[i] & 0xff);
+		// Print whitespace after any hex but last
+		if (i < amount + starting_position -1)
+		{
+			printf(" ");
+		}
 	}
 }
 
@@ -37,13 +42,12 @@ int main (int argc, const char *argv[])
 
 	const unsigned char bpk0_header[4] = {0x42, 0x50, 0x4B, 0x30};
 	const unsigned char bdl0_header[4] = {0x42, 0x44, 0x4C, 0x30};
-	//const unsigned char zlib_header[2] = {0x78, 0x9C};
-	const unsigned short buffer_size = 2048;
-	const unsigned short header_size = 4;
+	const unsigned short buffer_size   = 2048;
+	const unsigned short header_size   = 4;
 
 	int file_length = 0;
 	int footer_address = 0;
-	char *buffer = new char [buffer_size];
+	char buffer[buffer_size];
 
 	std::ifstream file (argv[1], std::ifstream::binary);
 	if (file)
