@@ -31,6 +31,18 @@ void printh (const char input[], const int amount, const int starting_position)
 		}
 	}
 }
+// {0xCA, 0xFE, 0xBA, 0xBE} -> 0xBEBAFECA -> 3199925962
+int hex_to_dec (const char input[], const int amount, const int starting_position)
+{
+	int temp = 0;
+	const int stop = starting_position - amount;
+	for (int i = starting_position; i > stop; i--)
+	{
+		// Multiplying charcode by power of 16 and add to temp
+		temp += (input[i] < 0 ? input[i] + 256 : input[i]) * pow (16, (i - (stop + 1)) * 2);
+	}
+	return temp;
+}
 
 int main (int argc, const char *argv[])
 {
@@ -47,6 +59,7 @@ int main (int argc, const char *argv[])
 
 	int file_length = 0;
 	int footer_address = 0;
+	int chunk_size = 0;
 	char buffer[buffer_size];
 
 	std::ifstream file (argv[1], std::ifstream::binary);
@@ -70,18 +83,16 @@ int main (int argc, const char *argv[])
 				printh (buffer, 16, 4);
 				printf ("\n");
 
-				for (int j = 19; j > 15; j--)
-				{
-					// Multiplying charcode by power of 16 and add to footer_address
-					footer_address += (buffer[j] < 0 ? buffer[j] + 256 : buffer[j]) * pow (16, (j - 16) * 2);
-				}
+				footer_address = hex_to_dec(buffer, 4, 19);
 			}
 
 			if (memcmp (tmp, bdl0_header, header_size) == 0)
 			{
 				printf ("chunk  at 0x%x, magic bytes: ", i);
-				printh (buffer, 28, 4);
-				printf ("\n");
+				printh (buffer, 7, 4);
+				chunk_size = 0;
+				chunk_size = (hex_to_dec(buffer, 3, 10) == 0 ? hex_to_dec(buffer, 3, 6) : hex_to_dec(buffer, 3, 10));
+				printf (", size: %d\n", chunk_size);
 			}
 
 			else if (i == footer_address)
