@@ -9,12 +9,12 @@ Tool for extracting data from neva.pkg (Evangelion: Jo (PSP) resources file)
 
 ### Body
 1. `BDL0`
-2. chunk size (or [TBF](#what-is-tbf))
+2. uncompressed chunk size (if Zlib-ed)
 3. `00`
-4. chunk size (or `00 00 00`)
+4. compressed chunk size
 
 ### Footer
-1. 16 bytes x number of file names in file list
+1. 16 bytes × number of file names in file list
 2. file names
 
 > Note: since field length is 3 bytes, maximum chunk size is **16 MiB - 1** (hypothetically)
