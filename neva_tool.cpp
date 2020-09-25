@@ -25,7 +25,7 @@ void printh (const char input[], const int amount, const int starting_position)
 	{
 		printf ("%02x", input[i] & 0xff);
 		// Print whitespace after any hex but last
-		if (i < amount + starting_position -1)
+		if (i < amount + starting_position - 1)
 		{
 			printf(" ");
 		}
@@ -83,16 +83,22 @@ int main (int argc, const char *argv[])
 				printh (buffer, 16, 4);
 				printf ("\n");
 
-				footer_address = hex_to_dec(buffer, 4, 19);
+				footer_address = hex_to_dec (buffer, 4, 19);
 			}
 
 			if (memcmp (tmp, bdl0_header, header_size) == 0)
 			{
-				printf ("chunk  at 0x%x, magic bytes: ", i);
-				printh (buffer, 7, 4);
-				chunk_size = 0;
-				chunk_size = (hex_to_dec(buffer, 3, 10) == 0 ? hex_to_dec(buffer, 3, 6) : hex_to_dec(buffer, 3, 10));
-				printf (", size: %d\n", chunk_size);
+				printf ("chunk  at 0x%x", i);
+				chunk_size = hex_to_dec (buffer, 3, 10);
+				if (chunk_size == 0)
+				{
+					chunk_size = hex_to_dec (buffer, 3, 6);
+					printf (", size: %d\n", chunk_size);
+				}
+				else
+				{
+					printf (", size: %d (compressed)\n", chunk_size);
+				}
 			}
 
 			else if (i == footer_address)
