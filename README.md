@@ -9,9 +9,9 @@ Tool for extracting data from neva.pkg (Evangelion: Jo (PSP) resources file)
 
 ### Body
 1. `BDL0`
-2. uncompressed chunk size (if Zlib-ed)
+2. uncompressed chunk size
 3. `00`
-4. compressed chunk size
+4. compressed chunk size (if Zlib-ed)
 
 ### Footer
 1. 16 bytes × number of file names in file list
