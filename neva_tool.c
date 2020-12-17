@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 
 void printh (const char input[], const int amount, const int starting_position)
 {
@@ -62,6 +63,7 @@ int main (int argc, const char *argv[])
 	int footer_address = 0;
 	int chunk_size = 0;
 	char buffer[buffer_size];
+    bool first_chunk = true;
 
     file = fopen (argv[1], "rb");
 
@@ -72,6 +74,8 @@ int main (int argc, const char *argv[])
         file_length = ftell (file);
         fseek (file, 0, SEEK_SET);
 
+        printf ("{\r\n");
+
         for (int i = 0; i < file_length; i += buffer_size)
         {
             fseek (file, i, SEEK_SET);
@@ -81,32 +85,58 @@ int main (int argc, const char *argv[])
 
             if (memcmp (tmp, bpk0_header, header_size) == 0)
 			{
-				printf ("header at 0x0, magic bytes: ");
-				printh (buffer, 16, 4);
-				printf ("\n");
+                //{
+                //    "header":
+                //    {
+                //        "address": "",
+                //        "magic bytes": ""
+                //    },
+                //    "chunks":
+                //    [
+                printf ("\t\"header\":\r\n\t{\r\n\t\t\"address\": \"0x0\",\r\n\t\t\"magic bytes\": \"");
+                printh (buffer, 16, 4);
+                printf ("\"\r\n\t},\r\n\t\"chunks\":\r\n\t[\r\n");
 
 				footer_address = hex_to_dec (buffer, 4, 19);
 			}
 
             if (memcmp (tmp, bdl0_header, header_size) == 0)
 			{
-				printf ("chunk  at 0x%x", i);
-				chunk_size = hex_to_dec (buffer, 3, 10);
-				if (chunk_size == 0)
-				{
-					chunk_size = hex_to_dec (buffer, 3, 6);
-					printf (", size: %d\n", chunk_size);
-				}
-				else
-				{
-					printf (", size: %d (compressed)\n", chunk_size);
-				}
+                //    {
+                //        "address": "",
+                //        "size": int,
+                //        "compressed": bool
+                //    },
+                if (first_chunk)
+                {
+                    printf ("\t\t{\r\n\t\t\t\"address\": \"0x%x\",\r\n", i);
+                    first_chunk = false;
+                }
+                else
+                {
+                    printf (",\r\n\t\t{\r\n\t\t\t\"address\": \"0x%x\",\r\n", i);
+                }
+                chunk_size = hex_to_dec (buffer, 3, 10);
+                if (chunk_size == 0)
+                {
+                    chunk_size = hex_to_dec (buffer, 3, 6);
+                    printf ("\t\t\t\"size\": %d,\r\n\t\t\t\"compressed\": false\r\n\t\t}", chunk_size);
+                }
+                else
+                {
+                    printf ("\t\t\t\"size\": %d,\r\n\t\t\t\"compressed\": true\r\n\t\t}", chunk_size);
+                }
 			}
 
 			else if (i == footer_address)
 			{
-				printf ("footer at 0x%x\n", i);
-				break;
+                //    ],
+                //    "footer":
+                //    {
+                //        "address": ""
+                //    }
+                //}
+                printf ("\r\n\t],\r\n\t\"footer\":\r\n\t{\r\n\t\t\"address\": \"0x%x\"\r\n\t}\r\n}\r\n", i);
 			}
         }
         fclose (file);
