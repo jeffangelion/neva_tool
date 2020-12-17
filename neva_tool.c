@@ -14,10 +14,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <fstream>
-#include <cstring>
-#include <cmath>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
 
 void printh (const char input[], const int amount, const int starting_position)
 {
@@ -27,11 +26,12 @@ void printh (const char input[], const int amount, const int starting_position)
 		// Print whitespace after any hex but last
 		if (i < amount + starting_position - 1)
 		{
-			printf(" ");
+			printf (" ");
 		}
 	}
 }
-// {0xCA, 0xFE, 0xBA, 0xBE} -> 0xBEBAFECA -> 3199925962
+
+// convert little-endian hex array to decimal number
 int hex_to_dec (const char input[], const int amount, const int starting_position)
 {
 	int temp = 0;
@@ -46,38 +46,40 @@ int hex_to_dec (const char input[], const int amount, const int starting_positio
 
 int main (int argc, const char *argv[])
 {
-	if (argc < 2)
+    if (argc < 2)
 	{
-		printf("Usage: %s <filename>\n", argv[0]);
+		printf ("Usage: %s <filename>\n", argv[0]);
 		return 1;
 	}
 
-	const unsigned char bpk0_header[4] = {0x42, 0x50, 0x4B, 0x30};
+    const unsigned char bpk0_header[4] = {0x42, 0x50, 0x4B, 0x30};
 	const unsigned char bdl0_header[4] = {0x42, 0x44, 0x4C, 0x30};
 	const unsigned short buffer_size   = 2048;
 	const unsigned short header_size   = 4;
 
-	int file_length = 0;
+    FILE *file;
+    int file_length = 0;
 	int footer_address = 0;
 	int chunk_size = 0;
 	char buffer[buffer_size];
 
-	std::ifstream file (argv[1], std::ifstream::binary);
-	if (file)
-	{
-		// Get file size and return cursor to beginning
-		file.seekg (0, file.end);
-		file_length = file.tellg();
-		file.seekg (0, file.beg);
+    file = fopen (argv[1], "rb");
 
-		for (int i = 0; i < file_length; i += buffer_size)
-		{
-			file.seekg (i, file.beg);
-			file.read (buffer, buffer_size);
-			char tmp[header_size];
-			memcpy (tmp, buffer, header_size);
+    if (file)
+    {
+        // Get file size and return cursor to beginning
+        fseek (file, 0, SEEK_END);
+        file_length = ftell (file);
+        fseek (file, 0, SEEK_SET);
 
-			if (memcmp (tmp, bpk0_header, header_size) == 0)
+        for (int i = 0; i < file_length; i += buffer_size)
+        {
+            fseek (file, i, SEEK_SET);
+            fread (buffer, buffer_size, 1, file);
+            char tmp[header_size];
+            memcpy (tmp, buffer, header_size);
+
+            if (memcmp (tmp, bpk0_header, header_size) == 0)
 			{
 				printf ("header at 0x0, magic bytes: ");
 				printh (buffer, 16, 4);
@@ -86,7 +88,7 @@ int main (int argc, const char *argv[])
 				footer_address = hex_to_dec (buffer, 4, 19);
 			}
 
-			if (memcmp (tmp, bdl0_header, header_size) == 0)
+            if (memcmp (tmp, bdl0_header, header_size) == 0)
 			{
 				printf ("chunk  at 0x%x", i);
 				chunk_size = hex_to_dec (buffer, 3, 10);
@@ -106,9 +108,8 @@ int main (int argc, const char *argv[])
 				printf ("footer at 0x%x\n", i);
 				break;
 			}
-		}
-
-		file.close();
-	}
-	return 0;
+        }
+        fclose (file);
+    }
+    return 0;
 }
