@@ -53,24 +53,24 @@ int main (int argc, const char *argv[])
 		return 1;
 	}
 
-    const unsigned char bpk0_header[4] = {0x42, 0x50, 0x4B, 0x30};
-	const unsigned char bdl0_header[4] = {0x42, 0x44, 0x4C, 0x30};
-	const unsigned short buffer_size   = 2048;
-	const unsigned short header_size   = 4;
+		const unsigned char bpk0_header[4] = {0x42, 0x50, 0x4B, 0x30};
+		const unsigned char bdl0_header[4] = {0x42, 0x44, 0x4C, 0x30};
+		const unsigned short buffer_size   = 2048;
+		const unsigned short header_size   = 4;
 
     FILE *file;
     int file_length = 0;
-	int footer_address = 0;
-	int chunk_size = 0;
-	char buffer[buffer_size];
-    bool first_chunk = true;
+		int footer_address = 0;
+		int chunk_size = 0;
+		char buffer[buffer_size];
+		bool first_chunk = true;
 
-    file = fopen (argv[1], "rb");
+		file = fopen (argv[1], "rb");
 
-    if (file)
-    {
-        // Get file size and return cursor to beginning
-        fseek (file, 0, SEEK_END);
+		if (file)
+		{
+		// Get file size and return cursor to beginning
+		fseek (file, 0, SEEK_END);
         file_length = ftell (file);
         fseek (file, 0, SEEK_SET);
 
