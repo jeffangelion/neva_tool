@@ -14,16 +14,18 @@ Tool for extracting data from neva.pkg (Evangelion: Jo (PSP) resources file)
 4. compressed chunk size (if Zlib-ed)
 
 ### Footer
-1. 16 bytes × number of file names in file list
-2. file names
+Footer is splitted (for not yet know reason). Each footer part contains:
+1. 12 bytes - [TBF](#what-is-tbf)
+2. associated chunk address (little endian)
+Each footer part ends with name of each chunk divided with `00`
 
 > Note: since field length is 3 bytes, maximum chunk size is **16 MiB - 1** (hypothetically)
 
 ## neva.pkg info
 #### Checksums:
-MD5:    `26263287db03caeb0d3fc1393534706f`  
-SHA1:   `59d02466f26f9c8711e74187860aac5ebab7bc6d`  
-SHA256: `1ebb2c257abc09f8f61eabcc3f589f62609f21eccedd1f4ba0c3252f149e29d8`  
+MD5:    `26263287db03caeb0d3fc1393534706f`
+SHA1:   `59d02466f26f9c8711e74187860aac5ebab7bc6d`
+SHA256: `1ebb2c257abc09f8f61eabcc3f589f62609f21eccedd1f4ba0c3252f149e29d8`
 #### Path:
 `/psp_game/usrdir/neva.pkg`
 ###### What is TBF?
