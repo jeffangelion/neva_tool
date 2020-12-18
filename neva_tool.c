@@ -24,7 +24,7 @@ void printh (const char input[], const int amount, const int starting_position)
 	for (int i = starting_position; i < amount + starting_position; i++)
 	{
 		printf ("%02x", input[i] & 0xff);
-		// Print whitespace after any hex but last
+		// print whitespace after any hex but last
 		if (i < amount + starting_position - 1)
 		{
 			printf (" ");
@@ -39,7 +39,7 @@ int hex_to_dec (const char input[], const int amount, const int starting_positio
 	const int stop = starting_position - amount;
 	for (int i = starting_position; i > stop; i--)
 	{
-		// Multiplying charcode by power of 16 and add to temp
+		// multiplying charcode by power of 16 and add to temp
 		temp += (input[i] < 0 ? input[i] + 256 : input[i]) * pow (16, (i - (stop + 1)) * 2);
 	}
 	return temp;
@@ -69,10 +69,19 @@ int main (int argc, const char *argv[])
 
 	if (file)
 	{
-		// Get file size and return cursor to beginning
+		// get file size and return cursor to beginning
 		fseek (file, 0, SEEK_END);
     file_length = ftell (file);
     fseek (file, 0, SEEK_SET);
+
+		// file signature check
+		char test_header[header_size];
+		fread (test_header, header_size, 1, file);
+		fseek (file, 0, SEEK_SET);
+		if (memcmp (test_header, bpk0_header, header_size) != 0) {
+			printf ("wrong file\n");
+			return 2;
+		}
 
     printf ("{\r\n");
 
@@ -141,5 +150,9 @@ int main (int argc, const char *argv[])
     }
   	fclose (file);
   }
+	else
+	{
+		return 3;
+	}
   return 0;
 }
