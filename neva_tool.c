@@ -17,7 +17,7 @@
 #include <iconv.h>   // Shift-JIS <-> UTF-8
 #include <math.h>    // pow()
 #include <stdbool.h> // bool, true, false
-#include <stdio.h>   // printf(); fopen(); fseek(); ftell(); fread(); fclose()
+#include <stdio.h>   // printf(); fopen(); fseek(); ftell(); fread(); fclose(); rewind()
 #include <stdlib.h>  // exit()
 #include <string.h>  // memcpy(); strlen()
 
@@ -30,23 +30,22 @@ const unsigned short FILE_RECORD_SIZE = 16;
 const unsigned short FOLDER_ENTRY_NAME_OFFSET = 20;
 
 // Convert little-endian hex array to decimal number
-int convertHexToDec(const unsigned char input[], const unsigned amount,
+int convertHexToDec(const unsigned char input[], const size_t size,
                     const unsigned startingPosition) {
   unsigned output = 0;
-  const int stop = startingPosition - amount;
+  const int stop = startingPosition - size;
   for (int i = startingPosition; i > stop; i--) {
     // Multiplying charcode by power of 16 and add to output
-    output += (input[i] < 0 ? input[i] + 256 : input[i]) *
-              pow(16, (i - (stop + 1)) * 2);
+    output += input[i] * pow(16, (i - (stop + 1)) * 2);
   }
   return output;
 }
 
-int convertHexToDecShort(const char input[]) {
+int convertHexToDecShort(const unsigned char input[], const size_t size) {
   unsigned output = 0;
-  for (int i = strlen(input) - 1; i >= 0; i--) {
+  for (int i = size - 1; i >= 0; i--) {
     // Multiplying charcode by power of 16 and add to output
-    output += (input[i] < 0 ? input[i] + 256 : input[i]) * pow(16, i * 2);
+    output += input[i] * pow(16, i * 2);
   }
   return output;
 }
@@ -73,8 +72,8 @@ int iconvEasy(const char *toCode, const char *fromCode, char *toBuffer,
 // files in folder)
 void printFileEntries(const unsigned char folderName[], const unsigned address,
                       const unsigned nFiles, FILE *file) {
-  unsigned char fileRecord[FILE_RECORD_SIZE];
-  char nFileEntriesHex[4], fileEntryNameRaw[FILE_ENTRY_NAME_SIZE],
+  unsigned char fileRecord[FILE_RECORD_SIZE], nFileEntriesHex[4];
+  char fileEntryNameRaw[FILE_ENTRY_NAME_SIZE],
       fileEntryName[FILE_ENTRY_NAME_SIZE];
   unsigned nFileEntries, fileEntryNameOffset, fileEntryFullSize, fileEntrySize,
       fileEntryAddress = 0;
@@ -84,7 +83,9 @@ void printFileEntries(const unsigned char folderName[], const unsigned address,
     fseek(file, address, SEEK_SET);
     fread(nFileEntriesHex, 4, 1, file);
     fseek(file, -4, SEEK_CUR); // Return file cursor to starting position
-    nFileEntries = convertHexToDecShort(nFileEntriesHex) / FILE_RECORD_SIZE;
+    nFileEntries =
+        convertHexToDecShort(nFileEntriesHex, sizeof nFileEntriesHex) /
+        FILE_RECORD_SIZE;
     for (int i = 0; i < nFileEntries; i++) {
       memset(&fileEntryName, 0,
              FILE_ENTRY_NAME_SIZE); // Sanitize array before using with iconv
@@ -114,19 +115,17 @@ void printFileEntries(const unsigned char folderName[], const unsigned address,
 
 int main(int argc, const char *argv[]) {
   if (argc == 2) {
-    FILE *file;
+    FILE *file = fopen(argv[1], "rb");
     int fileSize, folderTableSize, folderTableAddress, folderRecordSize,
         folderEntryNumberOfFiles, folderEntryAddress = 0;
-    char folderRecordSizeHex[2], folderTableAddressHex[4],
-        fileHeader[HEADER_SIZE];
-
-    file = fopen(argv[1], "rb");
+    unsigned char folderTableAddressHex[4], folderRecordSizeHex[2];
+    char fileHeader[HEADER_SIZE];
 
     if (file) {
       // Get file size
       fseek(file, 0, SEEK_END); // Move file cursor to EOF
       fileSize = ftell(file);   // Save current position of file cursor
-      fseek(file, 0, SEEK_SET); // Move file cursor to beginning of file
+      rewind(file);             // Move file cursor to beginning of file
 
       // File signature check
       fread(fileHeader, HEADER_SIZE, 1, file);
@@ -138,7 +137,8 @@ int main(int argc, const char *argv[]) {
 
       fseek(file, 8, SEEK_SET); // Seek to folder table address
       fread(folderTableAddressHex, 4, 1, file);
-      folderTableAddress = convertHexToDecShort(folderTableAddressHex);
+      folderTableAddress = convertHexToDecShort(folderTableAddressHex,
+                                                sizeof folderTableAddressHex);
       folderTableSize = fileSize - folderTableAddress;
       printf("Folder name,Folder address,Number of files,File name,Is file "
              "compressed?,File size,File address\n");
@@ -150,7 +150,8 @@ int main(int argc, const char *argv[]) {
         fseek(file, 4, SEEK_CUR); // Seek to folder record size
         fread(folderRecordSizeHex, 2, 1,
               file); // Read folder record size from file
-        folderRecordSize = convertHexToDecShort(folderRecordSizeHex);
+        folderRecordSize = convertHexToDecShort(folderRecordSizeHex,
+                                                sizeof folderRecordSizeHex);
         fseek(file, -6, SEEK_CUR); // Return file cursor to starting position
 
         unsigned char folderRecord[folderRecordSize],
