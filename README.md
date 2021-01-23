@@ -37,14 +37,28 @@ Tool for extracting data from neva.pkg (Evangelion: Jo (PSP) resources file)
 |0     |N              |File entry name     |
 |N     |M              |Padding (mod 16 = 0)|
 
+> This table needs more explanation
 ### Folder entries table
 |Offset|Size (in bytes)|Purpose               |
 |------|---------------|----------------------|
-|0     |4              |Yet unknown           |
-|4     |2              |Folder entry size     |
+|0     |2              |n1|
+|2     |2              |n2|
+|4     |2              |Folder record size    |
 |6     |2              |Number of file entries|
 |8     |4              |Folder entry address  |
 |12    |4              |Folder entry size     |
 |16    |4              |Divider (`0x00000000`)|
 |20    |N              |Folder entry name     |
 |20+N  |1+M            |Padding (mod 4 = 0)   |
+
+#### Pseudocode explanation of `n1` and `n2`:
+```
+if n1 <= folderRecordSize and n2 == 0 then
+    print No subfolders
+else if n1 == folderRecordSize and n2 == folderRecordSize then
+    print No subfolders
+else if n1 > folderRecordSize and n2 == folderRecordSize then
+    print Next (n1 - n2) bytes are subfolders
+else if n1 == 0 and n2 == folderRecordSize then
+    print Is subfolder
+```
