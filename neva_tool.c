@@ -71,8 +71,8 @@ void printFileEntries(const unsigned char folderName[], const unsigned folderEnt
 
   if (nFileRecords != 0) {
     for (int i = 0; i < nFileRecords; i++) {
-      memset(&fileEntryName, 0,
-             FILE_ENTRY_NAME_SIZE); // Sanitize array before using with iconv
+      // Sanitize array before using with iconv
+      memset(fileEntryName, 0, FILE_ENTRY_NAME_SIZE);
 
       fseek(file, folderEntryAddress + FILE_RECORD_SIZE * i, SEEK_SET);
       fread(fileEntryNameOffsetHex, sizeof fileEntryNameOffsetHex, 1, file);
@@ -95,12 +95,12 @@ void printFileEntries(const unsigned char folderName[], const unsigned folderEnt
       fread(fileEntryNameRaw, FILE_ENTRY_NAME_SIZE, 1, file);
       iconvEasy("UTF-8", "SHIFT-JIS", fileEntryName, FILE_ENTRY_NAME_SIZE,
                 fileEntryNameRaw);
-      printf("%s,0x%x,%d,%s,%d,%d,0x%x\r\n", folderName, folderEntryAddress, nFileRecords,
+      printf("%s,0x%x,%u,%s,%d,%u,0x%x\n", folderName, folderEntryAddress, nFileRecords,
              fileEntryName, isFileEntryCompressed, fileEntrySize,
              fileEntryAddress);
     }
   } else {
-    printf("%s,0x%x,%d,,,,\r\n", folderName, folderEntryAddress, nFileRecords);
+    printf("%s,0x%x,%d,,,,\n", folderName, folderEntryAddress, nFileRecords);
   }
 }
 
